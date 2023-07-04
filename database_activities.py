@@ -1,4 +1,3 @@
-import os
 from deta import Deta
 import streamlit as st
 from datetime import datetime

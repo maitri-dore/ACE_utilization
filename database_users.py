@@ -1,4 +1,4 @@
-import os
+import streamlit as st
 from deta import Deta
 
 DETA_KEY = st.secrets['DETA_KEY']
