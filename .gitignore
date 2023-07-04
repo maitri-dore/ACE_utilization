@@ -128,7 +128,6 @@ upload_to_database.py
 .streamlit/
 hashed_pw.pkl
 generate_key.py
-database_users.py
 
 # Environments
 .env
