@@ -1,20 +1,13 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import plotly.express as px
-
 import database_activities as dba
 
-if 'login_status' not in st.session_state or not st.session_state['login_status']:
-    st.session_state['login_status'] = False
-    st.write('Please login on the main page.')
 
-if st.session_state['login_status']:
-
-    st.title('Statistics on the ACE utilization database.')
-
+st.title('Statistics on the ACE utilization database')
+try:
     res = dba.fetch_all()
     if len(res) == 0:
         st.write('There are no entries in the database.')
@@ -22,12 +15,12 @@ if st.session_state['login_status']:
         df = pd.DataFrame.from_dict(res, orient='columns')
         df['date'] = df['reg_time'].str.split(' ').str[0]
         df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
-
+    
         st.write('There are '+str(len(df))+' entries in the database.')
         st.markdown('- '+str(len(df['CID'].unique()))+' people have made entries.')
         st.markdown('- '+str(len(df.loc[df['division'].notna(), 'division'].unique()))+' divisions are represented.')
         st.markdown('- '+str(len(df['category'].unique()))+' utilization categories are included.')
-
+    
         cont1 = st.container()
         with cont1:
             st.subheader('When were items entered into the database?')
@@ -42,12 +35,12 @@ if st.session_state['login_status']:
                 dfp.loc[i, 'Month'] = this_month
                 antal = len(df[(df['date']>=this_month)&(df['date']<this_month+relativedelta(months=1))].index)
                 dfp.loc[i, 'New entries'] = antal
-
+    
             fig = px.bar(dfp, x='Month', y='New entries')
             fig.update_layout(xaxis_tickformat = '%b %Y')
             fig.update_xaxes(nticks = len(dfp))
             st.plotly_chart(fig)
-
+    
         cont2 = st.container()
         with cont2:
             st.subheader('When were the activities carried out?')
@@ -56,13 +49,14 @@ if st.session_state['login_status']:
             df['first_yr'] = df['first_yr'].apply(int)
             df['end_yr'] = df['time']
             df.loc[df['time'].str.contains('-'), 'end_yr'] = df.loc[df['time'].str.contains('-'), 'time'].str.split('-').str[1]
-            df['end_yr'] = df['end_yr'].apply(int) + 1
+            df['end_yr'] = df['end_yr'].apply(int)
             
-            yrlist = []
-            catlist = []
-            divlist = []
-            for i in df.index:
-                years = list(range(df.loc[i, 'first_yr'], df.loc[i, 'end_yr']))
+            yrlist = df.loc[df['first_yr'] == df['end_yr'], 'first_yr'].tolist()
+            catlist = df.loc[df['first_yr'] == df['end_yr'], 'category'].tolist()
+            divlist = df.loc[df['first_yr'] == df['end_yr'], 'division'].tolist()
+            
+            for i in df[df['first_yr'] != df['end_yr']].index:
+                years = list(range(df.loc[i, 'first_yr'], df.loc[i, 'end_yr']+1))
                 cats = [df.loc[i, 'category']]*len(years)
                 divs = [df.loc[i, 'division']]*len(years)
                 yrlist = yrlist + years
@@ -77,7 +71,7 @@ if st.session_state['login_status']:
             dfp1[['Year', 'Category']] = dfp[['Year', 'Category', 'cy']].groupby('cy').first()[['Year', 'Category']]
             fig = px.bar(dfp1, x='Year', y='Count', color='Category')
             st.plotly_chart(fig)
-
+    
         cont3 = st.container()
         with cont3:
             st.subheader('In which divisions were the activities carried out?')
@@ -91,3 +85,6 @@ if st.session_state['login_status']:
             dfp2[['Count', 'Division', 'Category']] = dfp2[['CID', 'division', 'category']]
             fig = px.bar(dfp2, x='Division', y='Count', color='Category')
             st.plotly_chart(fig)
+
+except:
+    st.write('Cannot load database right now, try reloading the page.')

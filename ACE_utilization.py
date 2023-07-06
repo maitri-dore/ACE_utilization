@@ -2,6 +2,9 @@ import streamlit_authenticator as stauth
 import streamlit as st
 import pandas as pd
 import numpy as np
+import pickle
+import io
+from datetime import datetime
 
 import database_users as dbu
 import database_activities as dba
@@ -56,24 +59,38 @@ if authentication_status and username == 'admin':
     
     if st.session_state['clicked_see_activities_admin']:
         st.write('Here are all registered activities')
-        res = dba.fetch_all()
-        if len(res) > 0:
-            df = pd.DataFrame.from_dict(res, orient='columns')
-            df['index'] = np.arange(len(df))+1
-            df.set_index('index', inplace=True)
-            cols = ['time', 'CID', 'title', 'name', 'division', 'category', 'comment', 'links', 'key']
-            st.dataframe(df[cols])
-
-            pa = st.multiselect('Which activitity do you want to delete?', df.index.tolist())
-            keys = df.loc[pa, 'key'].tolist()
-
-            delete = st.button('Delete')
-            if delete:
-                for k in keys:
-                    dba.delete_key(k)
-
-        else:
-            st.write('None')    
+        try:
+            res = dba.fetch_all()
+            if len(res) > 0:
+                df = pd.DataFrame.from_dict(res, orient='columns')
+                df['index'] = np.arange(len(df))+1
+                df.set_index('index', inplace=True)
+                cols = ['reg_time', 'CID', 'title', 'name', 'division', 'category', 'time', 'comment', 'links', 'key']
+                st.dataframe(df[cols])
+    
+                pa = st.multiselect('Which activitity do you want to delete?', df.index.tolist())
+                keys = df.loc[pa, 'key'].tolist()
+    
+                delete = st.button('Delete')
+                if delete:
+                    for k in keys:
+                        dba.delete_key(k)
+    
+                @st.cache_data
+                def convert_res2pkl(df0):
+                    f = io.BytesIO()
+                    pickle.dump(df0, f)
+                    return f
+    
+                st.subheader('Download database')
+                pkl = convert_res2pkl(res)
+                now = datetime.now()
+                ts = str(now.year)+'_'+str(now.month)+'_'+str(now.day)+'_'+str(now.hour)+'_'+str(now.minute)
+                st.download_button('Download database', data=pkl, file_name='UtilDB_'+ts+'.pickle')
+            else:
+                st.write('None')
+        except:
+            st.write('Cannot load database right now, try reloading the page.')
 
 #Run app normal login
 elif authentication_status:
@@ -94,11 +111,9 @@ elif authentication_status:
                 - **Commercialization and startups**. For example, you startup a company based on your innovation.
                 - **Expert advise**. For example, you provide advise to the government, contribute to international reports such as IPCC, contribute to development of new industry standards, etc.
                 - **Information to industry**. For example, you give a presentation with directed information to a specific societal sector.
-                - **Information to the public**. For example, you give a presentation about your research to the general public or school students at a science fair.
-                - **Other**. This is for utilization activities that you don't think fit in the categories above.
+                - **Information to the public**. For example, you participate in the public debate or present your research at a science fair.
+                - **Other**. This is for utilization activities that you don't think fit into the categories above.
                 """)
     
     authenticator.logout('Logout', 'sidebar')
-    
-    
     

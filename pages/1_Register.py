@@ -26,8 +26,8 @@ if st.session_state['login_status']:
         catlist = ['']+st.session_state['cats']
         category = st.selectbox('Type of activity', catlist, help='See definitions and examples on the first page.')
 
-        end_t = datetime.now().year+3
-        time = st.slider('Year(s) the activity was done', min_value=2015, max_value=end_t, value=[end_t-4,end_t-3])
+        thisy = datetime.now().year
+        time = st.slider('Year(s) the activity was done', min_value=thisy-10, max_value=thisy+4, value=[thisy-1,thisy])
         if time[0] == time[1]:
             time = str(time[0])
         else:
@@ -40,4 +40,17 @@ if st.session_state['login_status']:
         submit = st.form_submit_button('Submit')
         if submit:
             dba.insert_activity(title, cid, name, division, category, time, comment, links)
+
+    st.subheader('We categorize utilization activities as follows:')
+    st.markdown("""
+                - **Research collaboration**. For example, you collaborate with actors from industry or other societal sectors in a research project.
+                - **Competence development**. For example, you provide a course to people from the industry or support people's competence development in some other way. (Note this does not include our regular education of Chalmers students)
+                - **Technical services**. For example, you provide expert services such as laboratory analyses for people outside of the university.
+                - **Design and development**. For example, you contribute to the development of an urban area.
+                - **Commercialization and startups**. For example, you startup a company based on your innovation.
+                - **Expert advise**. For example, you provide advise to the government, contribute to international reports such as IPCC, contribute to development of new industry standards, etc.
+                - **Information to industry**. For example, you give a presentation with directed information to a specific societal sector.
+                - **Information to the public**. For example, you participate in the public debate or present your research at a science fair.
+                - **Other**. This is for utilization activities that you don't think fit into the categories above.
+                """)
 
