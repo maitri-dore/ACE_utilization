@@ -44,38 +44,19 @@ try:
         cont2 = st.container()
         with cont2:
             st.subheader('When were the activities carried out?')
-            df['first_yr'] = df['time']
-            df.loc[df['time'].str.contains('-'), 'first_yr'] = df.loc[df['time'].str.contains('-'), 'time'].str.split('-').str[0]
-            df['first_yr'] = df['first_yr'].apply(int)
-            df['end_yr'] = df['time']
-            df.loc[df['time'].str.contains('-'), 'end_yr'] = df.loc[df['time'].str.contains('-'), 'time'].str.split('-').str[1]
-            df['end_yr'] = df['end_yr'].apply(int)
-            
-            yrlist = df.loc[df['first_yr'] == df['end_yr'], 'first_yr'].tolist()
-            catlist = df.loc[df['first_yr'] == df['end_yr'], 'category'].tolist()
-            divlist = df.loc[df['first_yr'] == df['end_yr'], 'division'].tolist()
-            
-            for i in df[df['first_yr'] != df['end_yr']].index:
-                years = list(range(df.loc[i, 'first_yr'], df.loc[i, 'end_yr']+1))
-                cats = [df.loc[i, 'category']]*len(years)
-                divs = [df.loc[i, 'division']]*len(years)
-                yrlist = yrlist + years
-                catlist = catlist + cats
-                divlist = divlist + divs
-            dfp = pd.DataFrame({'Year':yrlist, 'Category':catlist, 'Count':divlist})
-            dfp.loc[~dfp['Category'].isin(st.session_state['cats']), 'Category'] = 'Unknown'
-            dfp.loc[~dfp['Count'].isin(st.session_state['divs']), 'Count'] = 'Unknown'
-            dfp['cy'] = dfp['Category']+dfp['Year'].astype(str)
-            
-            dfp1 = dfp[['Count', 'cy']].groupby('cy').count()
-            dfp1[['Year', 'Category']] = dfp[['Year', 'Category', 'cy']].groupby('cy').first()[['Year', 'Category']]
+            dfp = df.explode('time')
+            dfp.loc[~dfp['category'].isin(st.session_state['cats']), 'category'] = 'Unknown'
+            dfp.loc[~dfp['division'].isin(st.session_state['divs']), 'division'] = 'Unknown'
+            dfp['cy'] = dfp['category']+dfp['time'].astype(str)
+            dfp1 = dfp[['cy', 'division']].groupby('cy').count()
+            dfp1.columns = ['Count']
+            dfp1[['Year', 'Category']] = dfp[['time', 'category', 'cy']].groupby('cy').first()
             fig = px.bar(dfp1, x='Year', y='Count', color='Category')
             st.plotly_chart(fig)
-    
+        
         cont3 = st.container()
         with cont3:
             st.subheader('In which divisions were the activities carried out?')
-            
             dfp = df[['division', 'category', 'CID']].copy()
             dfp.loc[~dfp['category'].isin(st.session_state['cats']), 'category'] = 'Unknown'
             dfp.loc[~dfp['division'].isin(st.session_state['divs']), 'division'] = 'Unknown'

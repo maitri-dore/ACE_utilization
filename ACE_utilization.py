@@ -42,7 +42,7 @@ st.session_state['divs'] = ['Applied Acoustics', 'Architectural Theory and Metho
                 'Geology and Geotechnics', 'Structural Engineering', 
                 'Urban Design and Planning', 'Water Environment Technology']
 st.session_state['cats'] = ['Research collaboration', 'Competence development', 'Technical services', 'Design and development',
-                'Commercialization and startups', 'Expert advise', 'Information to industry', 'Information to the public', 'Other']
+                'Commercialization and startups', 'Expert advise', 'Information dissemination', 'Engagement in networks', 'Other']
 
 #Run app VP login
 if authentication_status and username == 'admin':
@@ -110,8 +110,8 @@ elif authentication_status:
                 - **Design and development**. For example, you contribute to the development of an urban area.
                 - **Commercialization and startups**. For example, you startup a company based on your innovation.
                 - **Expert advise**. For example, you provide advise to the government, contribute to international reports such as IPCC, contribute to development of new industry standards, etc.
-                - **Information to industry**. For example, you give a presentation with directed information to a specific societal sector.
-                - **Information to the public**. For example, you participate in the public debate or present your research at a science fair.
+                - **Information dissemination**. For example, you participate in the public debate, present your research to the public, or give a presentation targeting a specific societal sector.
+                - **Engagement in networks**. You are part of a network or organization that brings together different researchers and, possibly, stakeholders from society.
                 - **Other**. This is for utilization activities that you don't think fit into the categories above.
                 """)
     

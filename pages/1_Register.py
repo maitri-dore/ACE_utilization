@@ -27,9 +27,9 @@ if st.session_state['login_status']:
         thisy = datetime.now().year
         time = st.slider('Year(s) the activity was done', min_value=thisy-10, max_value=thisy+4, value=[thisy-1,thisy])
         if time[0] == time[1]:
-            time = str(time[0])
+            time = [time[0]]
         else:
-            time = str(time[0])+'-'+str(time[1])
+            time = list(range(time[0], time[1]+1))
 
         comment = st.text_area('Brief description of the activity', help='Write what you did.')
     
@@ -47,8 +47,8 @@ if st.session_state['login_status']:
                 - **Design and development**. For example, you contribute to the development of an urban area.
                 - **Commercialization and startups**. For example, you startup a company based on your innovation.
                 - **Expert advise**. For example, you provide advise to the government, contribute to international reports such as IPCC, contribute to development of new industry standards, etc.
-                - **Information to industry**. For example, you give a presentation with directed information to a specific societal sector.
-                - **Information to the public**. For example, you participate in the public debate or present your research at a science fair.
+                - **Information dissemination**. For example, you participate in the public debate, present your research to the public, or give a presentation targeting a specific societal sector.
+                - **Engagement in networks**. You are part of a network or organization that brings together different researchers and, possibly, stakeholders from society.
                 - **Other**. This is for utilization activities that you don't think fit into the categories above.
                 """)
 

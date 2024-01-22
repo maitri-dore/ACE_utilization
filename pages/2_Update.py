@@ -56,15 +56,16 @@ if st.session_state['login_status']:
                         ix2 = 0
                     category = st.selectbox('Type of activity', catlist, index=ix2, help='See definitions and examples on the first page.')
                     thisy = datetime.now().year
-                    if '-' in vals[-1]:
-                        values = [int(vals[-1].split('-')[0]),int(vals[-1].split('-')[1])]
+                    if len(vals[-1]) == 1:
+                        values = [int(vals[-1][0]), int(vals[-1][0])]
                     else:
-                        values = [int(vals[-1]), int(vals[-1])]
+                        values = [int(vals[-1][0]), int(vals[-1][-1])]
                     time = st.slider('Year(s) the activity was done', min_value=thisy-10, max_value=thisy+4, value=values)
                     if time[0] == time[1]:
-                        time = str(time[0])
+                        time = [time[0]]
                     else:
-                        time = str(time[0])+'-'+str(time[1])
+                        time = list(range(time[0], time[1]+1))
+
                     comment = st.text_area('Brief description', value=vals[6], help='Write what you did.')
                     links = st.text_area('Links (if available)', value=vals[7], help='Provide links to webpages or articles.')
                     submit = st.form_submit_button('Submit')
