@@ -26,7 +26,7 @@ for i in range(len(usernames)):
 
 authenticator = stauth.Authenticate(credentials, 'ACE utilization', 'abcdef', cookie_expiry_days=0)
 
-name, authentication_status, username = authenticator.login('Login', 'main')
+name, authentication_status, username = authenticator.login('main')
 
 if authentication_status == False:
     st.error('Username or password is incorrect')
