@@ -71,8 +71,8 @@ if authentication_status and username == 'admin':
                 time.sleep(2)
                 dfc = conn.read(worksheet=c, usecols=range(11))
                 for ix in dfc.index:
-                    time_start = dfc.loc[ix, 'time_start']
-                    time_end = dfc.loc[ix, 'time_end']
+                    time_start = int(dfc.loc[ix, 'time_start'])
+                    time_end = int(dfc.loc[ix, 'time_end'])
                     for y in range(time_start, time_end+1):
                         summary.append(dfc.loc[ix, ['key', 'CID', 'name', 'category', 'division']].tolist()+[y])
             summary = pd.DataFrame(summary[1:], columns=summary[0])
