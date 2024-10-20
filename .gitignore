@@ -124,10 +124,7 @@ celerybeat.pid
 *.sage.py
 
 # Mine
-upload_to_database.py
 .streamlit/
-hashed_pw.pkl
-generate_key.py
 
 # Environments
 .env

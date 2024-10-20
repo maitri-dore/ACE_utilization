@@ -1,13 +1,15 @@
 import streamlit as st
+import streamlit_authenticator as stauth
 from datetime import datetime
-
+from streamlit_gsheets import GSheetsConnection
+import random
+import pandas as pd
 
 if 'login_status' not in st.session_state or not st.session_state['login_status']:
     st.session_state['login_status'] = False
     st.write('Please login on the main page.')
 
 if st.session_state['login_status']:
-    import database_activities as dba
 
     st.title('Register a utilization activity')
     st.markdown('Fill out the fields below.')
@@ -26,10 +28,8 @@ if st.session_state['login_status']:
 
         thisy = datetime.now().year
         time = st.slider('Year(s) the activity was done', min_value=thisy-10, max_value=thisy+4, value=[thisy-1,thisy])
-        if time[0] == time[1]:
-            time = [time[0]]
-        else:
-            time = list(range(time[0], time[1]+1))
+        time_start = time[0]
+        time_end = time[1]
 
         comment = st.text_area('Brief description of the activity', help='Write what you did.')
     
@@ -37,7 +37,25 @@ if st.session_state['login_status']:
 
         submit = st.form_submit_button('Submit')
         if submit:
-            dba.insert_activity(title, cid, name, division, category, time, comment, links)
+            conn = st.connection('gsheets', type=GSheetsConnection)
+            randnr = str(random.randint(10,99))
+            now = datetime.now()
+            ts = str(now.year)+'_'+str(now.month)+'_'+str(now.day)+'_'+str(now.hour)+'_'+str(now.minute)
+            key = cid + '__' + ts + '__' + randnr
+
+            try:
+                df = conn.read(worksheet=cid, usecols=range(11))
+                df = df.set_index('key')
+                df.loc[key] = [cid, name, category, division, title, comment, links, time_start, time_end, ts]
+                df = df.reset_index()
+                conn.update(worksheet=cid, data=df)
+            except:
+                df = pd.DataFrame([[key, cid, name, category, division, title, comment, links, time_start, time_end, ts]], columns=st.session_state['headings'])
+                conn.create(worksheet=cid, data=df)
+                dfsum = conn.read(worksheet='summary', usecols=range(6))
+                for y in range(time_start, time_end+1):
+                    dfsum.loc[len(dfsum.index)] = [key, cid, name, category, division, y]
+                conn.update(worksheet='summary', data=dfsum)
 
     st.subheader('We categorize utilization activities as follows:')
     st.markdown("""

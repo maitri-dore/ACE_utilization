@@ -1,28 +1,24 @@
 import streamlit_authenticator as stauth
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-import numpy as np
-import pickle
-import io
+import time
 from datetime import datetime
-
-import database_users as dbu
-import database_activities as dba
 
 #emojis: https://www.webfx.com/tools/emoji-cheat-sheet/
 st.set_page_config(page_title='Utilization at ACE', page_icon=':boomerang:', layout='centered')
 st.title('Welcome to the utilization database of ACE!')
 
-# User authentication
-users = dbu.fetch_all_users()
+conn = st.connection('gsheets', type=GSheetsConnection)
 
-usernames = [user['key'] for user in users]
-names = [user['name'] for user in users]
-hashed_passwords = [user['password'] for user in users]
+users = conn.read(worksheet='login', usecols=[0, 1, 2])
+usernames = users['user'].tolist()
+names = users['username'].tolist()
+passwords = users['password'].tolist()
 
 credentials = {'usernames':{}}
 for i in range(len(usernames)):
-    credentials['usernames'][usernames[i]] = {'name':names[i], 'password':hashed_passwords[i]}
+    credentials['usernames'][usernames[i]] = {'name':names[i], 'password':passwords[i]}
 
 authenticator = stauth.Authenticate(credentials, 'ACE utilization', 'abcdef', cookie_expiry_days=0)
 
@@ -35,7 +31,6 @@ if authentication_status == None:
 
 st.session_state['login_status'] = authentication_status
 
-
 #Lists used throughout session
 st.session_state['divs'] = ['Applied Acoustics', 'Architectural Theory and Methods', 'Building Design',
                 'Building Services Engineering', 'Building Technology', 'Construction Management',
@@ -43,8 +38,11 @@ st.session_state['divs'] = ['Applied Acoustics', 'Architectural Theory and Metho
                 'Urban Design and Planning', 'Water Environment Technology']
 st.session_state['cats'] = ['Research collaboration', 'Competence development', 'Technical services', 'Design and development',
                 'Commercialization and startups', 'Expert advise', 'Information dissemination', 'Engagement in networks', 'Other']
+st.session_state['headings'] = ['key', 'CID', 'name', 'category', 'division', 
+                                  'title', 'comment', 'links', 
+                                  'time_start', 'time_end', 'reg_time']
 
-#Run app VP login
+# #Run app VP login
 if authentication_status and username == 'admin':
     st.markdown('Welcome admin')
     authenticator.logout('Logout', 'sidebar')
@@ -59,38 +57,46 @@ if authentication_status and username == 'admin':
     
     if st.session_state['clicked_see_activities_admin']:
         st.write('Here are all registered activities')
-        try:
-            res = dba.fetch_all()
-            if len(res) > 0:
-                df = pd.DataFrame.from_dict(res, orient='columns')
-                df['index'] = np.arange(len(df))+1
-                df.set_index('index', inplace=True)
-                cols = ['reg_time', 'CID', 'title', 'name', 'division', 'category', 'time', 'comment', 'links', 'key']
-                st.dataframe(df[cols])
-    
-                pa = st.multiselect('Which activitity do you want to delete?', df.index.tolist())
-                keys = df.loc[pa, 'key'].tolist()
-    
-                delete = st.button('Delete')
-                if delete:
-                    for k in keys:
-                        dba.delete_key(k)
-    
-                @st.cache_data
-                def convert_res2pkl(df0):
-                    f = io.BytesIO()
-                    pickle.dump(df0, f)
-                    return f
-    
-                st.subheader('Download database')
-                pkl = convert_res2pkl(res)
-                now = datetime.now()
-                ts = str(now.year)+'_'+str(now.month)+'_'+str(now.day)+'_'+str(now.hour)+'_'+str(now.minute)
-                st.download_button('Download database', data=pkl, file_name='UtilDB_'+ts+'.pickle')
-            else:
-                st.write('None')
-        except:
-            st.write('Cannot load database right now, try reloading the page.')
+        st.cache_data.clear()
+        df = conn.read(worksheet='summary', usecols=range(6))
+        df = df.groupby('key').first()
+        df = df.reset_index()
+        st.dataframe(df)
+        cidlist = df['CID'].unique()
+
+        update = st.button('Update')
+        if update:
+            summary = [['key', 'CID', 'name', 'category', 'division', 'year']]
+            for c in cidlist:
+                time.sleep(2)
+                dfc = conn.read(worksheet=c, usecols=range(11))
+                for ix in dfc.index:
+                    time_start = dfc.loc[ix, 'time_start']
+                    time_end = dfc.loc[ix, 'time_end']
+                    for y in range(time_start, time_end+1):
+                        summary.append(dfc.loc[ix, ['key', 'CID', 'name', 'category', 'division']].tolist()+[y])
+            summary = pd.DataFrame(summary[1:], columns=summary[0])
+            conn.update(worksheet='summary', data=summary)
+            print(summary.head())
+
+        download = st.button('Download')
+        if download:
+            dflist = []
+            for c in cidlist:
+                time.sleep(2)
+                dfc = conn.read(worksheet=c, usecols=range(11))
+                dflist.append(dfc)
+            dfout = pd.concat(dflist, axis=0, ignore_index=True)
+            st.dataframe(dfout)
+
+            @st.cache_data
+            def convert_df(df0):
+                return df0.to_csv(sep='\t').encode('utf-8')
+
+            tsv = convert_df(dfout)
+            now = datetime.now()
+            ts = str(now.year)+'_'+str(now.month)+'_'+str(now.day)+'_'+str(now.hour)+'_'+str(now.minute)
+            st.download_button('Press to download database', data=tsv, file_name='UtilDB_'+ts+'.txt')
 
 #Run app normal login
 elif authentication_status:
