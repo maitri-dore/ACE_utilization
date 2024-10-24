@@ -40,7 +40,7 @@ if st.session_state['login_status']:
             conn = st.connection('gsheets', type=GSheetsConnection)
             randnr = str(random.randint(10,99))
             now = datetime.now()
-            ts = str(now.year)+'_'+str(now.month)+'_'+str(now.day)+'_'+str(now.hour)+'_'+str(now.minute)
+            ts = str(now.year)+'-'+str(now.month)+'-'+str(now.day)+'-'+str(now.hour)+'-'+str(now.minute)
             key = cid + '__' + ts + '__' + randnr
 
             try:

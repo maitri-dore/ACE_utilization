@@ -8,7 +8,6 @@ import random
 
 st.title('Statistics on the ACE utilization database')
 try:
-    st.cache_data.clear()
     conn = st.connection('gsheets', type=GSheetsConnection)
     df = conn.read(worksheet='summary', usecols=range(6))
 
@@ -18,7 +17,6 @@ try:
         df['date'] = df['key'].str.split('__').str[1].str[:10]
         df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
         dfu = df.groupby('key').first()
-
     
         st.write('There are '+str(len(dfu))+' entries in the database.')
         st.markdown('- '+str(len(df['CID'].unique()))+' people have made entries.')
@@ -83,6 +81,5 @@ try:
                 for c in ['name', 'title', 'division', 'category', 'comment', 'links']:
                     if isinstance(cid_data.loc[key, c], str):
                         st.write(c.upper()+ ': '+cid_data.loc[key, c])
-                # st.data_cache.clear()
 except:
     st.write('Cannot load database right now, try reloading the page.')
