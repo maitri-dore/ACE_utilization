@@ -65,7 +65,13 @@ if st.session_state['login_status']:
 
                     randnr = str(random.randint(10,99))
                     now = datetime.now()
-                    ts = str(now.year)+'-'+str(now.month)+'-'+str(now.day)+'-'+str(now.hour)+'-'+str(now.minute)
+                    mo = str(now.month)
+                    if len(mo) == 1:
+                        mo = '0'+mo
+                    da = str(now.day)
+                    if len(da) == 1:
+                        da = '0'+da
+                    ts = str(now.year)+'-'+mo+'-'+da+'-'+str(now.hour)+'-'+str(now.minute)
                     key = cid + '__' + ts + '__' + randnr
 
                     if submit:

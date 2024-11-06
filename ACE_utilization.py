@@ -95,7 +95,7 @@ if authentication_status and username == 'admin':
 
             tsv = convert_df(dfout)
             now = datetime.now()
-            ts = str(now.year)+'_'+str(now.month)+'_'+str(now.day)+'_'+str(now.hour)+'_'+str(now.minute)
+            ts = str(now.year)+'-'+str(now.month)+'-'+str(now.day)+'-'+str(now.hour)+'-'+str(now.minute)
             st.download_button('Press to download database', data=tsv, file_name='UtilDB_'+ts+'.txt')
 
 #Run app normal login
