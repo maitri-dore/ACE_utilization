@@ -77,7 +77,6 @@ if authentication_status and username == 'admin':
                         summary.append(dfc.loc[ix, ['key', 'CID', 'name', 'category', 'division']].tolist()+[y])
             summary = pd.DataFrame(summary[1:], columns=summary[0])
             conn.update(worksheet='summary', data=summary)
-            print(summary.head())
 
         download = st.button('Download')
         if download:

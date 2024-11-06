@@ -59,7 +59,8 @@ try:
         cont3 = st.container()
         with cont3:
             st.subheader('In which divisions were the activities carried out?')
-            dfp = df[['division', 'category', 'CID']].copy()
+            dfp = df.groupby('key').first()
+            dfp = dfp[['division', 'category', 'CID']]
             dfp.loc[~dfp['category'].isin(st.session_state['cats']), 'category'] = 'Unknown'
             dfp.loc[~dfp['division'].isin(st.session_state['divs']), 'division'] = 'Unknown'
             dfp['dc'] = dfp['division'] + dfp['category']
