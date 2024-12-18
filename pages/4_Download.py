@@ -16,7 +16,7 @@ if st.session_state['login_status']:
 
     try:
         conn = st.connection('gsheets', type=GSheetsConnection)
-        df = conn.read(worksheet=cid, usecols=range(11))
+        df = conn.read(worksheet=cid, usecols=range(11), ttl=5)
 
         if len(df) == 0:
             st.write('None')
@@ -34,6 +34,5 @@ if st.session_state['login_status']:
             st.write('Nothing is registered for this CID')
 
     except:
-        st.write('Cannot read from the database right now, try reloading the page.')
-
+        print('')
 

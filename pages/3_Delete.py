@@ -23,7 +23,7 @@ if st.session_state['login_status']:
         st.cache_data.clear()
         try:
             conn = st.connection('gsheets', type=GSheetsConnection)
-            df = conn.read(worksheet=cid, usecols=range(11))
+            df = conn.read(worksheet=cid, usecols=range(11), ttl=2)
     
             if len(df) == 0:
                 st.write('None')
@@ -35,12 +35,12 @@ if st.session_state['login_status']:
     
                 delete = st.button('Delete')
                 if delete:
-                    data1 = conn.read(worksheet='summary')
+                    data1 = conn.read(worksheet='summary', ttl=5)
                     data1 = data1[data1['key']!=key]
                     data1 = data1.reset_index(drop=True)
                     conn.update(worksheet='summary', data=data1)
 
-                    data2 = conn.read(worksheet=cid)
+                    data2 = conn.read(worksheet=cid, ttl=5)
                     data2 = data2[data2['key']!=key]
                     data2 = data2.reset_index(drop=True)
                     conn.update(worksheet=cid, data=data2)

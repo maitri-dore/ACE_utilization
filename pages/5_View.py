@@ -8,8 +8,9 @@ import random
 
 st.title('Statistics on the ACE utilization database')
 try:
+    st.cache_data.clear()
     conn = st.connection('gsheets', type=GSheetsConnection)
-    df = conn.read(worksheet='summary', usecols=range(6), ttl=5)
+    df = conn.read(worksheet='summary', usecols=range(6))
 
     if len(df) == 0:
         st.write('There are no entries in the database.')

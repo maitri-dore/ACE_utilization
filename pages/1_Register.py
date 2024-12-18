@@ -37,6 +37,7 @@ if st.session_state['login_status']:
 
         submit = st.form_submit_button('Submit')
         if submit:
+            st.cache_data.clear()
             conn = st.connection('gsheets', type=GSheetsConnection)
             randnr = str(random.randint(10,99))
             now = datetime.now()

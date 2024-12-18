@@ -26,8 +26,8 @@ if st.session_state['login_status']:
     if st.session_state['clicked_see_activities_update']:
         st.write('Here are registered activities for '+cid+':')
         try:
-            conn = st.connection('gsheets', type=GSheetsConnection)
             st.cache_data.clear()
+            conn = st.connection('gsheets', type=GSheetsConnection)
             df = conn.read(worksheet=cid, usecols=range(11))
 
             if len(df) == 0:
@@ -37,7 +37,9 @@ if st.session_state['login_status']:
     
                 pa = st.selectbox('Which activitity do you want to revise?', df.index.tolist())
                 cols = ['key', 'title', 'CID', 'name', 'division', 'category', 'comment', 'links', 'time_start', 'time_end']
-                vals = df.loc[pa, cols].tolist()
+                vals = df.loc[pa, cols]
+                vals[vals.isna()] = ''
+                vals = vals.tolist()
     
                 st.write('Update form below, then click submit.')
                 with st.form('Update_form', clear_on_submit=True):
@@ -57,11 +59,10 @@ if st.session_state['login_status']:
                         ix2 = 0
                     category = st.selectbox('Type of activity', catlist, index=ix2, help='See definitions and examples on the first page.')
                     thisy = datetime.now().year
-                    time = st.slider('Year(s) the activity was done', min_value=thisy-10, max_value=thisy+4, value=vals[-2:])
+                    time = st.slider('Year(s) the activity was done', min_value=thisy-10, max_value=thisy+4, value=[int(vals[-2]),int(vals[-1])])
 
                     comment = st.text_area('Brief description', value=vals[6], help='Write what you did.')
                     links = st.text_area('Links (if available)', value=vals[7], help='Provide links to webpages or articles.')
-                    submit = st.form_submit_button('Submit')
 
                     randnr = str(random.randint(10,99))
                     now = datetime.now()
@@ -74,9 +75,10 @@ if st.session_state['login_status']:
                     ts = str(now.year)+'-'+mo+'-'+da+'-'+str(now.hour)+'-'+str(now.minute)
                     key = cid + '__' + ts + '__' + randnr
 
+                    submit = st.form_submit_button('Submit')
                     if submit:
                         df.loc[pa] = [key, cid, name, category, division, title, comment, links, time[0], time[-1], ts]
                         conn.update(worksheet=cid, data=df)
 
         except:
-            st.write('Cannot read from the database right now, try reloading the page.')
+            st.write('')
