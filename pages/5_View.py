@@ -9,7 +9,7 @@ import random
 st.title('Statistics on the ACE utilization database')
 try:
     conn = st.connection('gsheets', type=GSheetsConnection)
-    df = conn.read(worksheet='summary', usecols=range(6))
+    df = conn.read(worksheet='summary', usecols=range(6), ttl=5)
 
     if len(df) == 0:
         st.write('There are no entries in the database.')
